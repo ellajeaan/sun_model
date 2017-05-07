@@ -1,0 +1,120 @@
+# a basic model for the sun
+# need to have equations for density, temp, and mass, and pressure
+# need to plot density, pressure, and temp
+
+# imports
+import numpy as np
+import matplotlib.pyplot as plt
+
+# list of constants for single point of control
+r_sun = 6.96*(10**8)  # meters
+mass_sun = 1.989*(10**30)  # kg
+mass_hyd = 1.67*(10**-27)  # kg
+mu = 0.62  # mean molecular weight
+k = 1.3807*(10**-23)  # JK-1
+G = 6.67*(10**-11) #  m^3/kg*s^2
+
+radius = np.linspace(0, r_sun, 15000)
+norm_rad = (1.0/r_sun)*radius
+
+
+# Central sun values from Standard Model
+row_c = 1.563*(10**5)  # kg/m^3
+P_c = 2.382*(10**18)  # N/m^3
+T_c = 1.581*(10**7)  # K
+
+#load in the data from the standard model
+
+data = np.loadtxt('Sundata.csv', comments='#', delimiter=',')
+
+mass_s = data[:,0]
+radius_s = data[:,1]
+pressure_s = data[:,4]
+Pc = pressure_s[0]
+temp_s = data[:,2]
+Tc = temp_s[0]
+
+# this is a function for density in terms of radius
+def density_function(r):
+        density = (3.0 * mass_sun) / (np.pi * (r_sun ** 3))
+        #n density_given = density * (1 - r / r_sun)
+        return density
+
+# running the density function over the given radius
+density_func = density_function(radius)
+#print density_func
+
+# a function for mass in terms of increasing radius
+def mass(r):
+        m = (4.0*np.pi*(r**3)*density_func)/3.0 - (density_func*np.pi*r**4)/r_sun
+        return m
+
+# running the function
+estim_mass = mass(radius)
+mass_tot = mass(r_sun)
+print mass_tot
+print mass_tot
+
+norm_mass = (1.0/mass_sun)*estim_mass
+
+# plotting the mass distribution as a function of radius
+
+plt.plot(norm_rad, norm_mass, label="Derived Mass")
+plt.plot(radius_s, mass_s, label="Standard Model")
+plt.ylabel("The Estimated Mass of the Sun")
+plt.xlabel("Radius Ranging from 0 to Solar Radius")
+plt.title("Estimated Mass VS Radius of the Sun")
+plt.legend()
+plt.show()
+
+
+# a function to define the pressure as a function of the radius.
+def pressure(r):
+        x = r/r_sun
+        P = ((5*G*mass_sun**2)/(4*np.pi*r_sun**4))*(1-((4.0/5.0)*(6*x**2 - 7*x**3 + (9.0/4.0)*x**4)))
+        return P
+
+# running the code with the radius linspace
+pressure_distrib = pressure(radius)
+central_pressure = (5.0*G*mass_tot**2)/(4.0*np.pi*r_sun**4)
+print central_pressure
+norm_pressure = (1.0/central_pressure)*pressure_distrib
+
+
+#print central_pressure
+
+# plotting the radius as a function of radius
+plt.plot(norm_rad, norm_pressure, label="Derived Pressure")
+plt.plot(radius_s, pressure_s/Pc, label="Standard Solar Model")
+plt.ylabel("Pressure Distribution in the Sun")
+plt.xlabel("Radius Ranging from 0 to Solar Radius")
+plt.title("Pressure Distribution as a Function of Solar Radius")
+plt.legend()
+plt.show()
+
+# a function to give the Temp as a function of radius
+def temp(r):
+        k = 1.3807*(10**-23)
+        x = r / r_sun
+        P = ((5*G*mass_sun**2)/(4*np.pi*r_sun**4))*(1-((4.0/5.0)*(6*x**2 - 7*x**3 + (9.0/4.0)*x**4)))
+        row = ((3.0*mass_sun)/(np.pi*(r_sun**3)))*(1-(r/r_sun))
+        T = (P*mu*mass_hyd)/(row*k)
+        return T
+
+
+# this is the temp for the centre of the sun
+temp_center = temp(0)
+print temp_center
+temperature = temp(radius)
+norm_temp = (1.0/temp_center)*temperature
+print temperature
+
+# plotting the temperature as a function of radius, pressure, and density
+plt.plot(norm_rad, norm_temp, label="Derived Temperature")
+plt.plot(radius_s, temp_s/Tc, label="Standard Model")
+plt.ylabel("Temperature as a function of Radius")
+plt.xlabel("Radius Ranging From 0 to Solar Radius")
+plt.title("Temperature Distribution as a Function of Solar Radius")
+plt.legend()
+plt.show()
+
